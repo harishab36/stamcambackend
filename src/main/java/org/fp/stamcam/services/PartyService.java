@@ -3,8 +3,10 @@ package org.fp.stamcam.services;
 import org.fp.stamcam.models.Party;
 import org.fp.stamcam.models.PartyType;
 import org.fp.stamcam.models.IdType;
+import org.fp.stamcam.models.Document;
 import org.fp.stamcam.repositories.PartyRepository;
 import org.fp.stamcam.utils.PartyIdGenerator;
+import org.fp.stamcam.utils.DocumentIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,9 @@ public class PartyService {
     @Autowired
     private PartyIdGenerator partyIdGenerator;
 
+    @Autowired
+    private DocumentIdGenerator documentIdGenerator;
+
     /**
      * Create a new party.
      *
@@ -35,6 +40,15 @@ public class PartyService {
         party.setId(partyIdGenerator.generatePartyId());
         party.setCreatedAt(LocalDateTime.now());
         party.setUpdatedAt(LocalDateTime.now());
+        
+        if (party.getDocuments() != null) {
+            for (Document doc : party.getDocuments()) {
+                if (doc.getId() == null || doc.getId().trim().isEmpty()) {
+                    doc.setId(documentIdGenerator.generateDocumentId());
+                }
+            }
+        }
+
         return partyRepository.save(party);
     }
 
@@ -75,11 +89,16 @@ public class PartyService {
             if (partyDetails.getPhoneNumber() != null) {
                 existingParty.setPhoneNumber(partyDetails.getPhoneNumber());
             }
-            if (partyDetails.getIdType() != null) {
-                existingParty.setIdType(partyDetails.getIdType());
-            }
             if (partyDetails.getPartyType() != null) {
                 existingParty.setPartyType(partyDetails.getPartyType());
+            }
+            if (partyDetails.getDocuments() != null) {
+                for (Document doc : partyDetails.getDocuments()) {
+                    if (doc.getId() == null || doc.getId().trim().isEmpty()) {
+                        doc.setId(documentIdGenerator.generateDocumentId());
+                    }
+                }
+                existingParty.setDocuments(partyDetails.getDocuments());
             }
             existingParty.setUpdatedAt(LocalDateTime.now());
             return partyRepository.save(existingParty);
@@ -108,16 +127,6 @@ public class PartyService {
      */
     public List<Party> getPartiesByType(PartyType partyType) {
         return partyRepository.findByPartyType(partyType);
-    }
-
-    /**
-     * Get all parties by identification type.
-     *
-     * @param idType the identification type
-     * @return list of parties with the specified ID type
-     */
-    public List<Party> getPartiesByIdType(IdType idType) {
-        return partyRepository.findByIdType(idType);
     }
 
     /**

@@ -90,7 +90,7 @@ public interface DeedRepository extends MongoRepository<Deed, String> {
      * @param partyName the party name to search for
      * @return list of deeds containing a party with the specified name
      */
-    @Query("{ 'parties.name' : { $regex: ?0, $options: 'i' } }")
+    @Query("{ 'parties': { $elemMatch: { 'name': { $regex: ?0, $options: 'i' } } } }")
     List<Deed> findByPartyName(String partyName);
 
     /**
@@ -99,7 +99,7 @@ public interface DeedRepository extends MongoRepository<Deed, String> {
      * @param partyId the party ID to search for
      * @return list of deeds containing the specified party ID
      */
-    @Query("{ 'parties._id' : ?0 }")
+    @Query("{ 'parties': { $elemMatch: { '_id': ?0 } } }")
     List<Deed> findByPartyId(String partyId);
 
     /**
@@ -108,7 +108,7 @@ public interface DeedRepository extends MongoRepository<Deed, String> {
      * @param phoneNumber the phone number to search for
      * @return list of deeds containing a party with the specified phone number
      */
-    @Query("{ 'parties.phoneNumber' : ?0 }")
+    @Query("{ 'parties': { $elemMatch: { 'phoneNumber': ?0 } } }")
     List<Deed> findByPartyPhoneNumber(String phoneNumber);
     
     /**
@@ -117,7 +117,7 @@ public interface DeedRepository extends MongoRepository<Deed, String> {
      * @param idType the ID type of the party
      * @return list of deeds containing a party with the specified ID type
      */
-    @Query("{ 'parties.idType' : ?0 }")
+    @Query("{ 'parties': { $elemMatch: { 'idType': ?0 } } }")
     List<Deed> findByPartyIdType(IdType idType);
 
 }

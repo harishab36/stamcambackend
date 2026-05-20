@@ -5,9 +5,11 @@ import org.fp.stamcam.models.DeedType;
 import org.fp.stamcam.models.DeedStatus;
 import org.fp.stamcam.models.IdType;
 import org.fp.stamcam.models.Party;
+import org.fp.stamcam.models.Document;
 import org.fp.stamcam.repositories.DeedRepository;
 import org.fp.stamcam.utils.DeedIdGenerator;
 import org.fp.stamcam.utils.PartyIdGenerator;
+import org.fp.stamcam.utils.DocumentIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +32,9 @@ public class DeedService {
 
     @Autowired
     private PartyIdGenerator partyIdGenerator;
+
+    @Autowired
+    private DocumentIdGenerator documentIdGenerator;
 
     /**
      * Get all deeds.
@@ -81,6 +86,15 @@ public class DeedService {
                 if (party.getUpdatedAt() == null) {
                     party.setUpdatedAt(now);
                 }
+
+                // Generate IDs for any attached documents
+                if (party.getDocuments() != null) {
+                    for (Document doc : party.getDocuments()) {
+                        if (doc.getId() == null || doc.getId().trim().isEmpty()) {
+                            doc.setId(documentIdGenerator.generateDocumentId());
+                        }
+                    }
+                }
             }
         }
 
@@ -116,6 +130,15 @@ public class DeedService {
                         LocalDateTime now = LocalDateTime.now();
                         party.setCreatedAt(now);
                         party.setUpdatedAt(now);
+                    }
+
+                    // Generate IDs for any new attached documents
+                    if (party.getDocuments() != null) {
+                        for (Document doc : party.getDocuments()) {
+                            if (doc.getId() == null || doc.getId().trim().isEmpty()) {
+                                doc.setId(documentIdGenerator.generateDocumentId());
+                            }
+                        }
                     }
                 }
                 existingDeed.setParties(deed.getParties());
@@ -205,11 +228,18 @@ public class DeedService {
                     if (updatedPartyData.getPhoneNumber() != null) {
                         party.setPhoneNumber(updatedPartyData.getPhoneNumber());
                     }
-                    if (updatedPartyData.getIdType() != null) {
-                        party.setIdType(updatedPartyData.getIdType());
-                    }
+
                     if (updatedPartyData.getPartyType() != null) {
                         party.setPartyType(updatedPartyData.getPartyType());
+                    }
+
+                    if (updatedPartyData.getDocuments() != null) {
+                        for (Document doc : updatedPartyData.getDocuments()) {
+                            if (doc.getId() == null || doc.getId().trim().isEmpty()) {
+                                doc.setId(documentIdGenerator.generateDocumentId());
+                            }
+                        }
+                        party.setDocuments(updatedPartyData.getDocuments());
                     }
                     
                     // Update party's updatedAt timestamp
@@ -242,6 +272,14 @@ public class DeedService {
                     LocalDateTime now = LocalDateTime.now();
                     party.setCreatedAt(now);
                     party.setUpdatedAt(now);
+                }
+
+                if (party.getDocuments() != null) {
+                    for (Document doc : party.getDocuments()) {
+                        if (doc.getId() == null || doc.getId().trim().isEmpty()) {
+                            doc.setId(documentIdGenerator.generateDocumentId());
+                        }
+                    }
                 }
 
                 // Check if party with this ID doesn't already exist

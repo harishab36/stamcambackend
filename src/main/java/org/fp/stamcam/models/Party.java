@@ -5,9 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Party entity representing a party involved in a legal deed.
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  *
  * ID format: PT + 8 digits (e.g., PT00000001)
  */
-@Document(collection = "parties")
+@org.springframework.data.mongodb.core.mapping.Document(collection = "parties")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -45,14 +45,14 @@ public class Party {
     private String phoneNumber;
 
     /**
-     * Type of identification provided by the party (Address or Identity Proof).
-     */
-    private IdType idType;
-
-    /**
      * Type of party in the deed (Party One, Party Second, or Third Party).
      */
     private PartyType partyType;
+
+    /**
+     * List of documents associated with the party.
+     */
+    private List<Document> documents;
 
     /**
      * Timestamp when the party record was created.

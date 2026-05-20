@@ -114,22 +114,9 @@ public class PartyController {
     @Operation(summary = "Get parties by type", description = "Retrieve all parties of a specific type")
     @ApiResponse(responseCode = "200", description = "List of parties retrieved")
     public ResponseEntity<List<Party>> getPartiesByType(
-            @Parameter(description = "Party type (PARTY_ONE, PARTY_SECOND, THIRD_PARTY)")
+            @Parameter(description = "Party type (FIRST_PARTY, SECOND_PARTY, THIRD_PARTY)")
             @PathVariable PartyType partyType) {
         List<Party> parties = partyService.getPartiesByType(partyType);
-        return ResponseEntity.ok(parties);
-    }
-
-    /**
-     * Get parties by identification type.
-     */
-    @GetMapping("/idtype/{idType}")
-    @Operation(summary = "Get parties by ID type", description = "Retrieve all parties with a specific identification type")
-    @ApiResponse(responseCode = "200", description = "List of parties retrieved")
-    public ResponseEntity<List<Party>> getPartiesByIdType(
-            @Parameter(description = "ID type (ADDRESS, IDENTITY_PROOF)")
-            @PathVariable IdType idType) {
-        List<Party> parties = partyService.getPartiesByIdType(idType);
         return ResponseEntity.ok(parties);
     }
 

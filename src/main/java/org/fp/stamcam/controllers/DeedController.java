@@ -13,12 +13,16 @@ import org.fp.stamcam.models.DeedStatus;
 import org.fp.stamcam.models.IdType;
 import org.fp.stamcam.models.Party;
 import org.fp.stamcam.services.DeedService;
+import org.fp.stamcam.services.PdfGenerationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * REST Controller for deed operations.
@@ -31,6 +35,9 @@ public class DeedController {
 
     @Autowired
     private DeedService deedService;
+
+    @Autowired
+    private PdfGenerationService pdfGenerationService;
 
     /**
      * Get all deeds.
@@ -64,6 +71,38 @@ public class DeedController {
         return deedService.getDeedById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Generate PDF for a deed.
+     *
+     * @param id the deed ID
+     * @return PDF byte array
+     */
+    @GetMapping("/{id}/pdf")
+    @Operation(summary = "Generate Deed PDF", description = "Generates a structured PDF for the deed including reconstructed party ID documents.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "PDF generated successfully",
+                    content = @Content(mediaType = "application/pdf")),
+            @ApiResponse(responseCode = "404", description = "Deed not found")
+    })
+    public ResponseEntity<byte[]> generateDeedPdf(
+            @Parameter(description = "Deed ID (format: DD00000001)", required = true, example = "DD00000001")
+            @PathVariable String id) {
+        Optional<Deed> deedOptional = deedService.getDeedById(id);
+        
+        if (deedOptional.isPresent()) {
+            byte[] pdfBytes = pdfGenerationService.generateDeedPdf(deedOptional.get());
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            // Suggesting a filename for download
+            headers.setContentDispositionFormData("attachment", "deed_" + id + ".pdf");
+            
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /**
