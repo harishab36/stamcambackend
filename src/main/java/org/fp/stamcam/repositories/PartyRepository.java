@@ -25,14 +25,6 @@ public interface PartyRepository extends MongoRepository<Party, String> {
     List<Party> findByPartyType(PartyType partyType);
 
     /**
-     * Find all parties by identification type.
-     *
-     * @param idType the identification type
-     * @return list of parties with the specified ID type
-     */
-    List<Party> findByIdType(IdType idType);
-
-    /**
      * Find a party by name (case-insensitive).
      *
      * @param name the party name
