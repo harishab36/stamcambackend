@@ -12,8 +12,8 @@ import org.fp.stamcam.models.Party;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.Base64;
 
 @Service
@@ -73,6 +73,10 @@ public class PdfGenerationService {
         }
 
         document.close();
+        File pdfFile = new File("doc.pdf");
+        if (pdfFile.exists()) {
+            pdfFile.delete(); // Clean up temporary file
+        }
         return baos.toByteArray();
     }
 }

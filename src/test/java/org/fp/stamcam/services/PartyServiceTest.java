@@ -1,5 +1,6 @@
 package org.fp.stamcam.services;
 
+import org.fp.stamcam.models.Document;
 import org.fp.stamcam.models.Party;
 import org.fp.stamcam.models.PartyType;
 import org.fp.stamcam.models.IdType;
@@ -43,7 +44,7 @@ public class PartyServiceTest {
                 .name("John Doe")
                 .emailId("john@example.com")
                 .phoneNumber("9876543210")
-                .idType(IdType.IDENTITY_PROOF)
+                .documents(Arrays.asList(new Document( "DOX00000001", IdType.ADDRESS_PROOF, "base64ImageData")))
                 .partyType(PartyType.FIRST_PARTY)
                 .build();
 
@@ -54,7 +55,7 @@ public class PartyServiceTest {
 
         assertNotNull(createdParty);
         assertEquals("John Doe", createdParty.getName());
-        assertEquals(IdType.IDENTITY_PROOF, createdParty.getIdType());
+        assertEquals(IdType.IDENTITY_PROOF, createdParty.getDocuments().get(0).getIdType());
         verify(partyRepository, times(1)).save(any(Party.class));
     }
 
@@ -68,7 +69,7 @@ public class PartyServiceTest {
                 .name("Jane Doe")
                 .emailId("jane@example.com")
                 .phoneNumber("9876543211")
-                .idType(IdType.ADDRESS)
+                .documents(Arrays.asList(new Document( "DOX00000001", IdType.ADDRESS_PROOF, "base64ImageData")))
                 .partyType(PartyType.SECOND_PARTY)
                 .build();
 
@@ -120,7 +121,7 @@ public class PartyServiceTest {
                 .name("John Doe")
                 .emailId("john@example.com")
                 .phoneNumber("9876543210")
-                .idType(IdType.IDENTITY_PROOF)
+                .documents(Arrays.asList(new Document( "DOX00000001", IdType.IDENTITY_PROOF, "base64ImageData")))
                 .partyType(PartyType.FIRST_PARTY)
                 .build();
 
