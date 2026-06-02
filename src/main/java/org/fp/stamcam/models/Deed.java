@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -57,15 +59,10 @@ public class Deed {
      */
     private DeedStatus status;
 
-    /**
-     * Timestamp when the deed was created.
-     */
+    @CreatedDate
     private LocalDateTime createdAt;
 
-    /**
-     * Timestamp when the deed was last updated.
-     */
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
 }
-

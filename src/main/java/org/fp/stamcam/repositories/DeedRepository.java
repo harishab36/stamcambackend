@@ -65,6 +65,14 @@ public interface DeedRepository extends MongoRepository<Deed, String> {
     List<Deed> findByStatus(DeedStatus status);
 
     /**
+     * Count deeds by status.
+     *
+     * @param status the deed status
+     * @return the number of deeds with the specified status
+     */
+    long countByStatus(DeedStatus status);
+
+    /**
      * Find deeds by type and status.
      *
      * @param type the deed type

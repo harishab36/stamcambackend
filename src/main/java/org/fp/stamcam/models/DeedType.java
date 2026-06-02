@@ -6,11 +6,17 @@ package org.fp.stamcam.models;
 public enum DeedType {
     SALE_DEED("Sale Deed", "Property sale transfer"),
     GIFT_DEED("Gift Deed", "Property given as a gift"),
+    PROPERTY_TRANSFER_DEED("Property Transfer Deed", "General property transfer"),
+    QUIT_CLAIM_DEED("Quit Claim Deed", "Transfer without warranties"),
+    DEED_OF_TRUST("Deed of Trust", "Property held in trust"),
+    POWER_OF_ATTORNEY_DEED("Power of Attorney Deed", "Authority to act on behalf of another"),
+    PARTNERSHIP_DEED("Partnership Deed", "Agreement between partners"),
+    WILL_DEED("Will Deed", "Property transfer upon death"),
+    DONATION_DEED("Donation Deed", "Property donation"),
     MORTGAGE_DEED("Mortgage Deed", "Property mortgaged"),
     LEASE_DEED("Lease Deed", "Property leased"),
     EXCHANGE_DEED("Exchange Deed", "Property exchanged"),
     PARTITION_DEED("Partition Deed", "Property partition"),
-    DONATION_DEED("Donation Deed", "Property donation"),
     RELEASE_DEED("Release Deed", "Release of rights"),
     TRANSFER_DEED("Transfer Deed", "General property transfer"),
     AFFIDAVIT_DEED("Affidavit Deed", "Affidavit-based transfer");

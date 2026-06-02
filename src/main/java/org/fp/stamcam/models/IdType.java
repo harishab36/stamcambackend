@@ -1,10 +1,14 @@
 package org.fp.stamcam.models;
 
+import lombok.Getter;
+
 /**
  * Enumeration for different types of party identification.
  */
+@Getter
 public enum IdType {
-    ADDRESS("Address", "Address as identification"),
+    USER_PHOTO("User Photo", "Photo of the user for identification"),
+    ADDRESS_PROOF("Address Proof", "Address as identification"),
     IDENTITY_PROOF("Identity Proof", "Valid identity document (Passport, Aadhar, etc.)");
 
     private final String displayName;
@@ -21,11 +25,4 @@ public enum IdType {
         this.description = description;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
 }
