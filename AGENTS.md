@@ -3,7 +3,7 @@
 ## Project Overview
 **StamCamBackend** is a Java 24 Maven project (org.fp:StamCamBackend:1.0-SNAPSHOT). It follows standard Maven directory structure with clear separation of production code, resources, and tests.
 
-## Directory Structure & Code Organization
+## Directory Structure & Code OrganizationR
 
 ### Core Locations
 - `/src/main/java/` - Production Java source code (currently empty, create package structure here)

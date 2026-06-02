@@ -1,257 +1,420 @@
-# StamCamBackend - Spring Boot MongoDB Application
+# StamCam Backend
 
-A Spring Boot REST API application for managing camera devices using MongoDB and Swagger/OpenAPI documentation.
+A Spring Boot REST API for managing legal deed documents, parties, users, roles, and zones. Built with MongoDB for persistence and iText 7 for PDF generation.
 
-## Features
+---
 
-- ✅ **Spring Boot 3.3.0** - Latest Spring Boot framework
-- ✅ **MongoDB Integration** - Spring Data MongoDB for data persistence
-- ✅ **REST API** - Complete CRUD operations for camera management
-- ✅ **Swagger/OpenAPI** - Interactive API documentation at `/stamcam/api/v1/swagger-ui.html`
-- ✅ **Lombok** - Reduce boilerplate code with annotations
-- ✅ **Unit Tests** - Comprehensive test coverage with JUnit 5 and Mockito
-- ✅ **Java 24** - Latest Java features enabled
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Spring Boot 3.3.0 |
+| Language | Java 21 |
+| Database | MongoDB |
+| PDF Generation | iText 7.2.1 |
+| API Documentation | SpringDoc OpenAPI (Swagger UI) |
+| Boilerplate Reduction | Lombok |
+| Build Tool | Maven |
+
+---
+
+## Prerequisites
+
+- Java 21+
+- Maven 3.8+
+- MongoDB running on `localhost:27017`
+
+---
+
+## Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd StamCamBackend
+```
+
+### 2. Configure MongoDB
+
+The app connects to `mongodb://localhost:27017/stamcam_db` by default.  
+To override, edit `src/main/resources/application.properties`:
+
+```properties
+spring.data.mongodb.uri=mongodb://localhost:27017/stamcam_db
+```
+
+For authenticated connections:
+
+```properties
+spring.data.mongodb.uri=mongodb://username:password@host:27017/stamcam_db
+```
+
+### 3. Run the application
+
+```bash
+mvn spring-boot:run
+```
+
+Server starts on **http://localhost:8080**.
+
+### 4. Open Swagger UI
+
+```
+http://localhost:8080/api/v1/swagger-ui.html
+```
+
+Raw OpenAPI JSON:
+
+```
+http://localhost:8080/api/v1/docs
+```
+
+---
 
 ## Project Structure
 
 ```
-src/
-├── main/
-│   ├── java/org/fp/stamcam/
-│   │   ├── StamCamBackendApplication.java      # Main Spring Boot application class
-│   │   ├── config/
-│   │   │   └── SwaggerConfig.java              # Swagger/OpenAPI configuration
-│   │   ├── controllers/
-│   │   │   └── CameraController.java           # REST endpoints for cameras
-│   │   ├── models/
-│   │   │   └── Camera.java                     # MongoDB document entity
-│   │   ├── repositories/
-│   │   │   └── CameraRepository.java           # MongoDB repository interface
-│   │   └── services/
-│   │       └── CameraService.java              # Business logic layer
-│   └── resources/
-│       └── application.properties              # Application configuration
-└── test/
-    └── java/org/fp/stamcam/
-        └── services/
-            └── CameraServiceTest.java          # Unit tests for CameraService
+src/main/java/org/fp/stamcam/
+├── StamCamBackendApplication.java
+├── config/
+│   ├── SwaggerConfig.java
+│   └── WebConfig.java               # CORS configuration
+├── controllers/
+│   ├── DeedController.java
+│   ├── UserController.java
+│   ├── RoleController.java
+│   └── ZoneController.java
+├── models/
+│   ├── Deed.java
+│   ├── DeedType.java                # Enum
+│   ├── DeedStatus.java              # Enum
+│   ├── Party.java
+│   ├── PartyType.java               # Enum
+│   ├── IdType.java                  # Enum
+│   ├── Document.java
+│   ├── User.java
+│   ├── Role.java
+│   ├── Screen.java
+│   ├── Section.java
+│   └── Zone.java
+├── repositories/
+│   ├── DeedRepository.java
+│   ├── PartyRepository.java
+│   ├── UserRepository.java
+│   ├── RoleRepository.java
+│   └── ZoneRepository.java
+├── services/
+│   ├── DeedService.java
+│   ├── PartyService.java
+│   ├── PdfGenerationService.java
+│   ├── UserService.java
+│   ├── RoleService.java
+│   └── ZoneService.java
+├── utils/
+│   ├── DeedIdGenerator.java
+│   ├── PartyIdGenerator.java
+│   ├── DocumentIdGenerator.java
+│   ├── UserIdGenerator.java
+│   ├── RoleIdGenerator.java
+│   └── ZoneIdGenerator.java
+└── exceptions/
+    ├── GlobalExceptionHandler.java
+    └── ZoneNotFoundException.java
 ```
 
-## Prerequisites
+---
 
-- **Java 24** or later
-- **Maven 3.8+**
-- **MongoDB 5.0+** (running locally or accessible via connection string)
+## ID Format Convention
 
-## Getting Started
+Every entity has an auto-generated prefixed ID assigned at creation time.
 
-### 1. Clone and Navigate to Project
+| Entity | Prefix | Example |
+|---|---|---|
+| Deed | `DD` | `DD00000001` |
+| Party | `PT` | `PT00000001` |
+| User | `USR` | `USR00000001` |
+| Role | `ROL` | `ROL00000001` |
+| Zone | `ZON` | `ZON00000001` |
 
-```bash
-cd /Users/harishab36/Downloads/Backends/StamCamBackend
+---
+
+## Data Models
+
+### Deed
+| Field | Type | Description |
+|---|---|---|
+| `id` | String | Auto-generated (`DD` + 8 digits) |
+| `title` | String | Deed title |
+| `matter` | String | Full text content of the deed |
+| `type` | DeedType | Enum (see values below) |
+| `parties` | List\<Party\> | Parties involved in the deed |
+| `status` | DeedStatus | `DRAFT` / `IN_PROGRESS` / `COMPLETED` |
+| `createdAt` | LocalDateTime | Auto-set on creation |
+| `updatedAt` | LocalDateTime | Auto-updated on each save |
+
+**DeedType values:** `SALE_DEED`, `GIFT_DEED`, `PROPERTY_TRANSFER_DEED`, `QUIT_CLAIM_DEED`, `DEED_OF_TRUST`, `POWER_OF_ATTORNEY_DEED`, `PARTNERSHIP_DEED`, `WILL_DEED`, `DONATION_DEED`, `MORTGAGE_DEED`, `LEASE_DEED`, `EXCHANGE_DEED`, `PARTITION_DEED`, `RELEASE_DEED`, `TRANSFER_DEED`, `AFFIDAVIT_DEED`
+
+**DeedStatus values:** `DRAFT`, `IN_PROGRESS`, `COMPLETED`
+
+### Party
+| Field | Type | Description |
+|---|---|---|
+| `id` | String | Auto-generated (`PT` + 8 digits) |
+| `name` | String | Full name |
+| `emailId` | String | Email address |
+| `phoneNumber` | String | Phone number |
+| `idType` | IdType | Type of ID proof provided |
+| `partyType` | PartyType | Role in the deed |
+
+### User
+| Field | Type | Description |
+|---|---|---|
+| `id` | String | Auto-generated (`USR` + 8 digits) |
+| `username` | String | Unique username |
+| `password` | String | Password (hash in production) |
+| `createdAt` | LocalDateTime | Auto-set on creation |
+| `updatedAt` | LocalDateTime | Auto-updated on each save |
+
+### Role
+| Field | Type | Description |
+|---|---|---|
+| `id` | String | Auto-generated (`ROL` + 8 digits) |
+| `name` | String | Role name (e.g., `Admin`, `Editor`) |
+| `allowedScreens` | List\<Screen\> | Screens this role has access to |
+
+### Screen
+| Field | Type | Description |
+|---|---|---|
+| `name` | String | Screen identifier |
+| `route` | String | Frontend route (e.g., `/dashboard`) |
+| `allowedSections` | List\<Section\> | Sections accessible within the screen |
+
+### Section
+| Field | Type | Description |
+|---|---|---|
+| `name` | String | Section identifier |
+| `description` | String | Purpose of the section |
+
+### Zone
+| Field | Type | Description |
+|---|---|---|
+| `id` | String | Auto-generated (`ZON` + 8 digits) |
+| `title` | String | Zone title |
+| `description` | String | Zone description |
+
+---
+
+## API Reference
+
+Base URL: `http://localhost:8080`
+
+---
+
+### Deeds — `/api/deeds`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/deeds` | Get all deeds |
+| `GET` | `/api/deeds/{id}` | Get deed by ID |
+| `POST` | `/api/deeds` | Create a new deed |
+| `PUT` | `/api/deeds/{id}` | Update a deed |
+| `DELETE` | `/api/deeds/{id}` | Delete a deed |
+| `GET` | `/api/deeds/{id}/pdf` | Download deed as PDF |
+| `GET` | `/api/deeds/count-by-status` | Count deeds grouped by status |
+| `GET` | `/api/deeds/type/{type}` | Filter by deed type |
+| `GET` | `/api/deeds/status/{status}` | Filter by deed status |
+| `PATCH` | `/api/deeds/{id}/status/{newStatus}` | Update deed status only |
+| `GET` | `/api/deeds/search/title/{title}` | Search by title (partial, case-insensitive) |
+| `GET` | `/api/deeds/exact/title/{title}` | Get deed by exact title |
+| `GET` | `/api/deeds/filter/type/{type}/title/{title}` | Filter by type + title |
+| `GET` | `/api/deeds/filter/type/{type}/status/{status}` | Filter by type + status |
+| `GET` | `/api/deeds/filter/status/{status}/title/{title}` | Filter by status + title |
+| `GET` | `/api/deeds/search/party/name/{partyName}` | Find deeds by party name |
+| `GET` | `/api/deeds/search/party/id/{partyId}` | Find deeds by party ID |
+| `GET` | `/api/deeds/search/party/phone/{phoneNumber}` | Find deeds by party phone number |
+| `GET` | `/api/deeds/search/party/idType/{idType}` | Find deeds by party ID type |
+| `GET` | `/api/deeds/{deedId}/parties` | Get all parties on a deed |
+| `GET` | `/api/deeds/{deedId}/parties/{partyId}` | Get a specific party on a deed |
+| `POST` | `/api/deeds/{deedId}/parties` | Add a party to a deed |
+| `PUT` | `/api/deeds/{deedId}/parties/{partyId}` | Update a party on a deed |
+| `DELETE` | `/api/deeds/{deedId}/parties/{partyId}` | Remove a party from a deed |
+
+---
+
+### Users — `/api/users`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/users` | Get all users |
+| `GET` | `/api/users/{id}` | Get user by ID |
+| `POST` | `/api/users` | Create a new user |
+| `PUT` | `/api/users/{id}` | Update a user |
+| `DELETE` | `/api/users/{id}` | Delete a user |
+| `GET` | `/api/users/username/{username}` | Get user by username |
+| `POST` | `/api/users/login` | Authenticate with username and password |
+
+---
+
+### Roles — `/api/roles`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/roles` | Get all roles |
+| `GET` | `/api/roles/{id}` | Get role by ID |
+| `POST` | `/api/roles` | Create a new role |
+| `PUT` | `/api/roles/{id}` | Update a role |
+| `DELETE` | `/api/roles/{id}` | Delete a role |
+| `GET` | `/api/roles/name/{name}` | Get role by exact name |
+| `GET` | `/api/roles/search?name=` | Search roles by name (partial, case-insensitive) |
+| `GET` | `/api/roles/exists?name=` | Check if a role name already exists |
+| `GET` | `/api/roles/with-screens` | Get roles that have at least one screen |
+| `GET` | `/api/roles/without-screens` | Get roles with no screens assigned |
+| `GET` | `/api/roles/screen/name/{screenName}` | Get roles with access to a screen by exact name |
+| `GET` | `/api/roles/screen/route?route=` | Get roles with access to a screen by route |
+| `GET` | `/api/roles/screen/search?name=` | Search roles by screen name keyword |
+| `GET` | `/api/roles/screen/{screenName}/count` | Count roles that have access to a screen |
+| `GET` | `/api/roles/section/name/{sectionName}` | Get roles that include a specific section |
+| `GET` | `/api/roles/section/search?name=` | Search roles by section name keyword |
+| `GET` | `/api/roles/screen/{screenName}/section/{sectionName}` | Get roles by screen + section combination |
+| `POST` | `/api/roles/{id}/screens` | Add a screen to a role |
+| `DELETE` | `/api/roles/{id}/screens/{screenName}` | Remove a screen from a role |
+
+---
+
+### Zones — `/api/zones`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/zones` | Get all zones |
+| `GET` | `/api/zones/{id}` | Get zone by ID |
+| `POST` | `/api/zones` | Create a new zone |
+| `PUT` | `/api/zones/{id}` | Update a zone |
+| `DELETE` | `/api/zones/{id}` | Delete a zone |
+
+---
+
+## Example Requests
+
+### Create a Deed
+
+```json
+POST /api/deeds
+{
+  "title": "Property Sale Agreement",
+  "matter": "This deed is made between the parties...",
+  "type": "SALE_DEED",
+  "status": "DRAFT"
+}
 ```
 
-### 2. Build the Project
+### Create a Role
 
-```bash
-mvn clean compile
+```json
+POST /api/roles
+{
+  "name": "Admin",
+  "allowedScreens": [
+    {
+      "name": "Dashboard",
+      "route": "/dashboard",
+      "allowedSections": [
+        { "name": "Overview", "description": "Summary statistics" },
+        { "name": "Reports", "description": "Downloadable reports" }
+      ]
+    }
+  ]
+}
 ```
 
-### 3. MongoDB Setup
+### Add a Party to a Deed
 
-Make sure MongoDB is running locally on the default port (27017):
-
-```bash
-# Using Docker (if Docker is installed)
-docker run -d -p 27017:27017 --name mongodb mongo:latest
-
-# Or if MongoDB is installed locally
-mongod
+```json
+POST /api/deeds/DD00000001/parties
+{
+  "name": "John Doe",
+  "emailId": "john@example.com",
+  "phoneNumber": "9876543210",
+  "idType": "IDENTITY_PROOF",
+  "partyType": "PARTY_ONE"
+}
 ```
 
-### 4. Run the Application
+### User Login
 
-```bash
-# Option 1: Using Maven
-mvn spring-boot:run
-
-# Option 2: Package and run JAR
-mvn clean package
-java -jar target/StamCamBackend-1.0-SNAPSHOT.jar
+```json
+POST /api/users/login
+{
+  "username": "admin",
+  "password": "secret"
+}
 ```
 
-The application will start on `http://localhost:8080/stamcam`
+---
 
-## API Endpoints
+## Logging
 
-### Camera Management
+Logs are written to the console and to `logs/stamcam.log`.  
+Files rotate at 10 MB and are retained for 7 days.
 
-- **GET** `/api/cameras` - Get all cameras
-- **GET** `/api/cameras/{id}` - Get camera by ID
-- **POST** `/api/cameras` - Create a new camera
-- **PUT** `/api/cameras/{id}` - Update a camera
-- **DELETE** `/api/cameras/{id}` - Delete a camera
-- **GET** `/api/cameras/location/{location}` - Get cameras by location
-- **GET** `/api/cameras/active/list` - Get all active cameras
-- **GET** `/api/cameras/model/{model}` - Get cameras by model
-
-## Swagger UI
-
-Access the interactive API documentation at:
-
-```
-http://localhost:8080/stamcam/api/v1/swagger-ui.html
-```
-
-## Example API Requests
-
-### Create a Camera
-
-```bash
-curl -X POST http://localhost:8080/stamcam/api/cameras \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Main Entrance",
-    "model": "HD-1080P",
-    "ipAddress": "192.168.1.10",
-    "location": "Entrance",
-    "active": true,
-    "resolution": "1920x1080"
-  }'
-```
-
-### Get All Cameras
-
-```bash
-curl http://localhost:8080/stamcam/api/cameras
-```
-
-### Get Active Cameras
-
-```bash
-curl http://localhost:8080/stamcam/api/cameras/active/list
-```
-
-### Update a Camera
-
-```bash
-curl -X PUT http://localhost:8080/stamcam/api/cameras/{id} \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Updated Camera Name",
-    "location": "New Location"
-  }'
-```
-
-## Test Execution
-
-Run all unit tests:
-
-```bash
-mvn test
-```
-
-Run a specific test class:
-
-```bash
-mvn test -Dtest=CameraServiceTest
-```
-
-## Database Configuration
-
-Edit `src/main/resources/application.properties` to configure MongoDB connection:
+Log levels can be adjusted in `application.properties`:
 
 ```properties
-# Default configuration (localhost)
-spring.data.mongodb.uri=mongodb://localhost:27017/stamcam_db
-
-# Or with authentication
-spring.data.mongodb.uri=mongodb://username:password@host:port/stamcam_db
+logging.level.org.fp.stamcam=DEBUG
+logging.level.org.springframework.data.mongodb=DEBUG
 ```
 
-## Key Dependencies
+---
 
-- **spring-boot-starter-web** - Web and REST support
-- **spring-boot-starter-data-mongodb** - MongoDB integration
-- **springdoc-openapi-starter-webmvc-ui** - Swagger UI
-- **lombok** - Java boilerplate reduction
-- **junit-jupiter** - JUnit 5 testing framework
-- **mockito** - Mocking framework for tests
+## Running Tests
 
-## Maven Commands
+Tests use Flapdoodle embedded MongoDB — no external database required.
+
+```bash
+# Run all tests
+mvn test
+
+# Run a specific test class
+mvn test -Dtest=PartyServiceTest
+```
+
+---
+
+## Build
 
 ```bash
 # Compile
 mvn clean compile
 
-# Test
-mvn test
+# Package as JAR
+mvn clean package
 
-# Package
-mvn package
+# Run the JAR directly
+java -jar target/StamCamBackend-1.0-SNAPSHOT.jar
 
 # Skip tests during packaging
-mvn package -DskipTests
-
-# View dependency tree
-mvn dependency:tree
-
-# Clean build artifacts
-mvn clean
-
-# Run the application
-mvn spring-boot:run
+mvn clean package -DskipTests
 ```
+
+---
 
 ## Troubleshooting
 
-### MongoDB Connection Error
-
-**Error**: `MongoTimeoutException: Timed out after 30000 ms`
-
-**Solution**: Ensure MongoDB is running:
+**MongoDB connection timeout**
 ```bash
-# Check if MongoDB is running
+# Verify MongoDB is running
 pgrep mongod
 
 # Start MongoDB
 mongod
 ```
 
-### Java Version Error
-
-**Error**: `Unsupported class file format`
-
-**Solution**: Verify Java 24+ is installed:
-```bash
-java --version
-```
-
-### Port Already in Use
-
-**Error**: `Address already in use - bind`
-
-**Solution**: Change the port in `application.properties`:
+**Port already in use**  
+Change the port in `application.properties`:
 ```properties
 server.port=8081
 ```
 
-## Development Notes
-
-- **Lombok**: Make sure your IDE has Lombok plugin installed for annotation processing
-- **IntelliJ IDEA**: Install Lombok plugin from Settings → Plugins
-- **Eclipse**: Install Lombok from https://projectlombok.org/setup/eclipse
-- **VS Code**: Ensure Java extension is installed
-
-## License
-
-MIT License - See LICENSE file for details
-
-## Next Steps
-
-- Extend the Camera model with additional properties as needed
-- Add authentication/authorization with Spring Security
-- Integrate with frontend applications
-- Add caching with Redis
-- Deploy to cloud services (AWS, Azure, GCP)
-
+**Lombok not working in IDE**  
+- IntelliJ IDEA: Settings → Plugins → Install Lombok
+- VS Code: Install the Java Extension Pack

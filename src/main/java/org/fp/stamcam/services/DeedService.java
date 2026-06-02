@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Service class for Deed operations.
@@ -70,8 +72,6 @@ public class DeedService {
         if (deed.getStatus() == null) {
             deed.setStatus(DeedStatus.DRAFT);
         }
-        deed.setCreatedAt(LocalDateTime.now());
-        deed.setUpdatedAt(LocalDateTime.now());
 
         // Generate IDs and set timestamps for all parties
         if (deed.getParties() != null) {
@@ -143,7 +143,6 @@ public class DeedService {
                 }
                 existingDeed.setParties(deed.getParties());
             }
-            existingDeed.setUpdatedAt(LocalDateTime.now());
             return deedRepository.save(existingDeed);
         });
     }
@@ -387,6 +386,19 @@ public class DeedService {
             deed.setUpdatedAt(LocalDateTime.now());
             return deedRepository.save(deed);
         });
+    }
+
+    /**
+     * Get a consolidated count of deeds by status.
+     *
+     * @return a map containing the count for each status
+     */
+    public Map<String, Long> getDeedsCountByStatus() {
+        return java.util.Arrays.stream(DeedStatus.values())
+                .collect(Collectors.toMap(
+                        DeedStatus::name,
+                        status -> deedRepository.countByStatus(status)
+                ));
     }
 
     /**

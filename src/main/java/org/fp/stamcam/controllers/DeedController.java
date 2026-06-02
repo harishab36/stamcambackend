@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -71,6 +72,19 @@ public class DeedController {
         return deedService.getDeedById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Get a consolidated count of deeds by status.
+     *
+     * @return a map containing the count for each status
+     */
+    @GetMapping("/count-by-status")
+    @Operation(summary = "Get deed count by status", description = "Get a consolidated count of deeds for each status (DRAFT, IN_PROGRESS, COMPLETED).")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved deed counts",
+            content = @Content(mediaType = "application/json", schema = @Schema(type = "object", additionalProperties = Schema.AdditionalPropertiesValue.TRUE)))
+    public ResponseEntity<Map<String, Long>> getDeedsCountByStatus() {
+        return ResponseEntity.ok(deedService.getDeedsCountByStatus());
     }
 
     /**
